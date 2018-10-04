@@ -89,6 +89,7 @@ void SampleBBox(const Sampler& sampler, NormalizedBBox* sampled_bbox) {
   CHECK_GT(sampler.min_scale(), 0.);
   CHECK_LE(sampler.max_scale(), 1.);
   float scale;
+
   caffe_rng_uniform(1, sampler.min_scale(), sampler.max_scale(), &scale);
 
   // Get random aspect ratio.
@@ -108,8 +109,8 @@ void SampleBBox(const Sampler& sampler, NormalizedBBox* sampled_bbox) {
 
   // Figure out top left coordinates.
   float w_off, h_off;
-  caffe_rng_uniform(1, 0.f, 1 - bbox_width, &w_off);
-  caffe_rng_uniform(1, 0.f, 1 - bbox_height, &h_off);
+  caffe_rng_uniform(1, 0.f, std::max<float>(0, 1 - bbox_width), &w_off);
+  caffe_rng_uniform(1, 0.f, std::max<float>(0, 1 - bbox_height), &h_off);
 
   sampled_bbox->set_xmin(w_off);
   sampled_bbox->set_ymin(h_off);
