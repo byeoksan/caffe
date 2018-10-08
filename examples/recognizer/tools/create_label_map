@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import print_function
+
+import sys
+import argparse
+
+import caffe
+
+''' Port of tools/create_label_map.cpp '''
+
+PROG = 'create_label_map'
+DESC = 'Read in pairs label names and optionally ids and display names and store them in LabelMap proto buffer'
+
+parser = argparse.ArgumentParser(prog=PROG, description=DESC)
+parser.add_argument('LABELS_FILE')
+parser.add_argument('OUT_MAPFILE')
+
+args = parser.parse_args()
+
+labels_file = args.LABELS_FILE
+out_mapfile = args.OUT_MAPFILE
+
+label_map = caffe.proto.caffe_pb2.LabelMap()
+label_map.Clear()
+
+# Always include background
+background_name = 'background'
+item = label_map.item.add()
+item.name = background_name
+item.label = 0
+item.display_name = background_name
+
+name_set = set([background_name])
+with open(labels_file, 'r') as f:
+    for label, line in enumerate(f, start=1):
+        names = line.split() # There can be several names
+        if not names:
+            raise ValueError('Line {} in {} is empty'.format(label, labels_file))
+
+        for name in names:
+            if name in name_set:
+                raise ValueError('Label name {} appears twice'.format(name))
+            name_set.add(name)
+
+        name = names[0]
+        item = label_map.item.add()
+        item.name = name
+        item.label = label
+        item.display_name = name
+
+with open(out_mapfile, 'w') as f:
+    print(label_map, file=f)

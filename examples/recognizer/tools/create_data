@@ -1,0 +1,52 @@
+#!/bin/bash
+
+if [ -z $LPR_SSD_ROOT ]; then
+    echo "LPR_SSD_ROOT environment variable is not set yet"
+    exit 1
+fi
+
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 <model env>"
+    exit 1
+fi
+
+workspace="$(cd "$(dirname $0)" > /dev/null && pwd -P)"
+workspace="$(cd "$workspace/.." > /dev/null && pwd -P)/$1"
+
+if [ ! -d $workspace ]; then
+    echo "Workspace <$workspace> does not exist!"
+    exit 1
+fi
+
+redo=1
+label_type="txt"
+mapfile="$workspace/labels_map.prototxt"
+anno_type="detection"
+db="lmdb"
+min_dim=0
+max_dim=0
+width=0
+height=0
+
+extra_cmd="--encode-type=jpg --encoded"
+if [ $redo ]
+then
+  extra_cmd="$extra_cmd --redo"
+fi
+
+python ${LPR_SSD_ROOT}/scripts/create_annoset.py \
+  --anno-type=$anno_type \
+  --label-type=$label_type \
+  --label-map-file=$mapfile \
+  --min-dim=$min_dim \
+  --max-dim=$max_dim \
+  --resize-width=$width \
+  --resize-height=$height \
+  --check-label \
+  $extra_cmd \
+  "/" \
+  $workspace/train_list.txt \
+  $workspace/train_lmdb \
+  $workspace/db
+
+rm -rf $workspace/db
