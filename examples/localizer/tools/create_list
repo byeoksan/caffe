@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import os
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('IMAGE_DIR')
+parser.add_argument('ANNO_DIR')
+parser.add_argument('OUTFILE')
+
+args = parser.parse_args()
+
+image_dir = args.IMAGE_DIR
+anno_dir = args.ANNO_DIR
+outfile = args.OUTFILE
+
+image_files = os.listdir(image_dir)
+with open(outfile, 'w') as f:
+    for image_file in image_files:
+        name = image_file.rsplit('.', 1)[0]
+
+        image_path = os.path.abspath(os.path.normpath(os.path.join(image_dir, image_file)))
+        anno_path = '{}.txt'.format(os.path.abspath(os.path.normpath(os.path.join(anno_dir, name))))
+
+        f.write('{} {}\n'.format(image_path, anno_path))

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [ -z $LPR_SSD_ROOT ]; then
+    echo "LPR_SSD_ROOT environment variable is not set yet"
+    exit 1
+fi
+
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 <model env>"
+    exit 1
+fi
+
+workspace="$(cd "$(dirname $0)" > /dev/null && pwd -P)"
+workspace="$(cd "$workspace/.." > /dev/null && pwd -P)/$1"
+
+if [ ! -d $workspace ]; then
+    echo "Workspace <$workspace> does not exist!"
+    exit 1
+fi
+
+${LPR_SSD_ROOT}/build/tools/caffe train \
+    -gpu 3 \
+    -solver "$workspace/solver.prototxt" \
+    -weights "${LPR_SSD_ROOT}/models/VGG_ILSVRC_16_layers_fc_reduced.caffemodel"
